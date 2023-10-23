@@ -3,9 +3,11 @@ package com.cos.security1.config.oauth;
 import com.cos.security1.config.auth.PrincipalDetails;
 import com.cos.security1.config.auth.provider.FacebookUserInfo;
 import com.cos.security1.config.auth.provider.GooleUserInfo;
+import com.cos.security1.config.auth.provider.NaverUserInfo;
 import com.cos.security1.config.auth.provider.OAuth2UserInfo;
 import com.cos.security1.model.User;
 import com.cos.security1.repository.UserRepository;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -42,8 +44,11 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
             oAuth2UserInfo= new GooleUserInfo(oauth2User.getAttributes());
         }else if(userRequest.getClientRegistration().getRegistrationId().equals("facebook")){
             oAuth2UserInfo= new FacebookUserInfo(oauth2User.getAttributes());
-        }else{
-            System.out.println("지원 안함");
+        }else if(userRequest.getClientRegistration().getRegistrationId().equals("naver")){
+            oAuth2UserInfo= new NaverUserInfo((Map)oauth2User.getAttributes().get("response"));
+        }
+        else{
+            System.out.println("지원 안함 //config/oauth/PrincipalOauth2UserService 예외처리");
         }
         String provider = oAuth2UserInfo.getProvider();
         String providerId= oAuth2UserInfo.getProviderId();
