@@ -1,6 +1,9 @@
 package com.cos.security1.config.oauth;
 
 import com.cos.security1.config.auth.PrincipalDetails;
+import com.cos.security1.config.auth.provider.FacebookUserInfo;
+import com.cos.security1.config.auth.provider.GooleUserInfo;
+import com.cos.security1.config.auth.provider.OAuth2UserInfo;
 import com.cos.security1.model.User;
 import com.cos.security1.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,18 +35,27 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         // userRequest정보 -> loaderUser함수 -> 구글로부터 회원프로필 받아준다.
         System.out.println("getAttributes : "+oauth2User.getAttributes());
 
+        //강제로 회원가입시키기
+        OAuth2UserInfo  oAuth2UserInfo =null;
+        if(userRequest.getClientRegistration().getRegistrationId().equals("google")){
 
-        String provider = userRequest.getClientRegistration().getRegistrationId();// google
-        String providerId= oauth2User.getAttribute("sub");
-        String username = provider+"_"+providerId; // google_(ID)
+            oAuth2UserInfo= new GooleUserInfo(oauth2User.getAttributes());
+        }else if(userRequest.getClientRegistration().getRegistrationId().equals("facebook")){
+            oAuth2UserInfo= new FacebookUserInfo(oauth2User.getAttributes());
+        }else{
+            System.out.println("지원 안함");
+        }
+        String provider = oAuth2UserInfo.getProvider();
+        String providerId= oAuth2UserInfo.getProviderId();
+        String username = provider+"_"+providerId;
         String password = UUID.randomUUID().toString();
-        String email= oauth2User.getAttribute("email");
+        String email= oAuth2UserInfo.getEmail();
         String role = "ROLE_USER";
 
         User userEntity = userRepository.findByUsername(username);
 
 
-        //강제로 회원가입시키기
+
         if(userEntity == null){
              userEntity = User.builder()
                     .username(username)
